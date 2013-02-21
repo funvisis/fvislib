@@ -8,16 +8,15 @@ register and a column for each field.
 Optionally an unique header for each field. If the headers are present, indexing
 is like dicts, otherwise is like tuples.
 
-Example:
+Example (doctest valid):
 
 >>> import htmltable
->>> html = \"""
-<table>
-<tr><td>1</td><td>Jesus</td><td>1234</td><td>2</td></tr>
-<tr><td>2</td><td>Angela</td><td>4321</td><td>1</td></tr>
-<table>
-\"""
->>> tuples_table = htmltable.HTMLTable(html)
+>>> html = "<table>\\n" \
+"<tr><td>1</td><td>Jesus</td><td>1234</td><td>2</td></tr>\\n" \
+"<tr><td>2</td><td>Angela</td><td>4321</td><td>1</td></tr>\\n" \
+"</table>"
+
+>>> tuples_table = htmltable.HTMLTable(html).table
 >>> tuples_table[0]
 ('1', 'Jesus', '1234', '2')
 >>> tuples_table[1]
@@ -29,16 +28,33 @@ Example:
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 TypeError: tuple indices must be integers, not str
->>> html = \"""
-<table>
-<tr><th>id</th><th>name</th><th>official_id</th><th>related_to</th></tr>
-<tr><td>1</td><td>Jesus</td><td>1234</td><td>2</td></tr>
-<tr><td>2</td><td>Angela</td><td>4321</td><td>1</td></tr>
-<table>
-\"""
->>> dicts_table = htmltable.HTMLTable(html)
+>>> html = "<table>\\n" \
+"<tr><th>id</th><th>name</th><th>official_id</th><th>related_to</th></tr>\\n" \
+"<tr><td>1</td><td>Jesus</td><td>1234</td><td>2</td></tr>\\n" \
+"<tr><td>2</td><td>Angela</td><td>4321</td><td>1</td></tr>\\n" \
+"</table>"  
+>>> dicts_table = htmltable.HTMLTable(html).table
 >>> angela = dicts_table[1]
 >>> angela["name"]
 'Angela'
 >>>
 """
+
+from xml.etree import ElementTree as ET
+
+class HTMLTable(object):
+
+    def __init__(self, html):
+        """
+        http://stackoverflow.com/a/7315891/344501
+        """
+        self.table = []
+        table = ET.XML(html)
+        rows = iter(table)
+        if any(column.tag == 'th' for row in table for column in row):
+            headers = [col.text for col in next(rows)]
+            for row in rows:
+                self.table.append(dict(zip(headers, (col.text for col in row))))
+        else:
+            for row in rows:
+                self.table.append(tuple(col.text for col in row))
