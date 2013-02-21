@@ -38,6 +38,12 @@ TypeError: tuple indices must be integers, not str
 >>> angela["name"]
 'Angela'
 >>>
+
+This code assume that the html passed contains only one table (ideally, only the
+chunk beggining with <table> and ending with </table>. You can extract all the 
+tables from an html with Beautifulsoup4 findall method::
+
+    Beautifulsoup4.findall('table')
 """
 
 from xml.etree import ElementTree as ET
